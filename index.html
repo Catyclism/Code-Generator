@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>cryptum | secure cipher suite</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(145deg, #e9eef4 0%, #dfe6ef 100%);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      padding: 2rem;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* main vault container – refined, soft shadow, clean radius */
+    .vault {
+      max-width: 1380px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 2rem;
+      box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.02);
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+
+    /* header area */
+    .vault-header {
+      padding: 1.6rem 2rem;
+      border-bottom: 1px solid #edf2f7;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 1rem;
+      background: #ffffff;
+    }
+
+    .brand h1 {
+      font-size: 1.7rem;
+      font-weight: 620;
+      letter-spacing: -0.4px;
+      background: linear-gradient(135deg, #1c4e70, #2b6a91);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .brand p {
+      font-size: 0.8rem;
+      color: #5f7f9a;
+      margin-top: 4px;
+      font-weight: 450;
+    }
+
+    .chip-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .chip {
+      background: #f0f4fa;
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #236b8e;
+      letter-spacing: 0.2px;
+      border: 0.5px solid #dfe8f0;
+    }
+
+    /* main dual grid */
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      padding: 2rem;
+    }
+
+    @media (max-width: 880px) {
+      .grid-2col {
+        grid-template-columns: 1fr;
+        gap: 1.8rem;
+        padding: 1.5rem;
+      }
+      body {
+        padding: 1rem;
+      }
+    }
+
+    /* card design – clean, airy */
+    .card {
+      background: #ffffff;
+      border-radius: 1.5rem;
+      border: 1px solid #eef3fc;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.02);
+      transition: all 0.2s ease;
+    }
+
+    .card-head {
+      padding: 1.2rem 1.5rem 0.5rem 1.5rem;
+      border-bottom: 1px solid #f0f4fa;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #3f6d8c;
+    }
+
+    .card-head .icon-box {
+      background: #eef3fc;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      font-size: 0.8rem;
+    }
+
+    .card-body {
+      padding: 1.5rem;
+    }
+
+    /* text area */
+    .input-area {
+      width: 100%;
+      border: 1px solid #e2eaf2;
+      border-radius: 1.2rem;
+      padding: 1rem 1.2rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85rem;
+      background: #fefefe;
+      transition: all 0.2s;
+      resize: vertical;
+      color: #1c3e55;
+      line-height: 1.45;
+    }
+
+    .input-area:focus {
+      outline: none;
+      border-color: #80b5da;
+      box-shadow: 0 0 0 3px rgba(64, 128, 174, 0.1);
+    }
+
+    .counter {
+      text-align: right;
+      font-size: 0.7rem;
+      color: #8ba3bc;
+      margin-top: 6px;
+      font-family: monospace;
+    }
+
+    /* key section */
+    .key-section {
+      background: #fafdff;
+      border-radius: 1.2rem;
+      padding: 1rem 1.2rem;
+      margin: 1.2rem 0 1rem;
+      border: 1px solid #eef3fc;
+    }
+
+    .key-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .key-badge {
+      font-size: 0.7rem;
+      background: #eef2f8;
+      padding: 4px 12px;
+      border-radius: 30px;
+      color: #1d668b;
+      font-weight: 500;
+    }
+
+    .key-flex {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .key-input {
+      flex: 2;
+      background: white;
+      border: 1px solid #e2eaf2;
+      border-radius: 60px;
+      padding: 10px 18px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: #1d3e57;
+    }
+
+    .key-input:focus {
+      outline: none;
+      border-color: #6ea9cf;
+    }
+
+    .btn-ghost {
+      background: #eef3fc;
+      border: none;
+      border-radius: 40px;
+      padding: 8px 18px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      color: #22648b;
+      transition: 0.15s;
+    }
+
+    .btn-ghost:hover {
+      background: #e2ecf6;
+    }
+
+    .strength-tag {
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 60px;
+      background: #eef4fa;
+    }
+
+    /* button row */
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 1.2rem 0 1.2rem;
+    }
+
+    .btn {
+      border: none;
+      background: #f2f6fc;
+      padding: 8px 18px;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 0.8rem;
+      font-family: inherit;
+      color: #2b5a7a;
+      cursor: pointer;
+      transition: all 0.18s;
+      border: 0.5px solid #e2eaf0;
+    }
+
+    .btn-primary {
+      background: #1e668f;
+      color: white;
+      border: none;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-primary:hover {
+      background: #0e5179;
+      transform: translateY(-1px);
+      box-shadow: 0 5px 12px rgba(30, 102, 143, 0.2);
+    }
+
+    .btn-outline {
+      background: white;
+      border: 1px solid #d4e2ef;
+    }
+
+    .btn-outline:hover {
+      background: #f9fcff;
+      border-color: #b1cee8;
+    }
+
+    .result-panel {
+      background: #fbfeff;
+      border-radius: 1.2rem;
+      padding: 1rem;
+      margin-top: 0.8rem;
+      border-left: 3px solid #6196bb;
+      border-top: 1px solid #ecf3fa;
+      border-right: 1px solid #ecf3fa;
+      border-bottom: 1px solid #ecf3fa;
+    }
+
+    .result-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #6d8eaa;
+      margin-bottom: 8px;
+    }
+
+    .result-text {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.8rem;
+      word-break: break-all;
+      white-space: pre-wrap;
+      color: #1f4a67;
+    }
+
+    /* history log */
+    .history-area {
+      margin-top: 1.2rem;
+      border-top: 1px solid #eef3fc;
+      padding-top: 1rem;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .history-log {
+      background: #fefefe;
+      border-radius: 1rem;
+      border: 1px solid #ecf2f8;
+      padding: 0.8rem;
+      max-height: 150px;
+      overflow-y: auto;
+      font-size: 0.7rem;
+      font-family: monospace;
+    }
+
+    .log-entry {
+      border-bottom: 1px solid #edf2f7;
+      padding: 5px 4px;
+      color: #2b627f;
+    }
+
+    .text-link {
+      background: none;
+      border: none;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #4f7ea1;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    hr {
+      margin: 8px 0;
+      border: none;
+      border-top: 1px solid #ecf2f8;
+    }
+  </style>
+</head>
+<body>
+<div class="vault">
+  <div class="vault-header">
+    <div class="brand">
+      <h1>cryptum · cipher core</h1>
+      <p>authenticated AES-256-GCM · zero-trust encryption</p>
+    </div>
+    <div class="chip-group">
+      <div class="chip">PBKDF2</div>
+      <div class="chip">AEAD protected</div>
+      <div class="chip">web crypto api</div>
+    </div>
+  </div>
+
+  <div class="grid-2col">
+    <!-- left panel: encryption -->
+    <div class="card">
+      <div class="card-head">
+        <div class="icon-box">◷</div>
+        <span>plaintext · origin</span>
+      </div>
+      <div class="card-body">
+        <textarea id="plainInput" class="input-area" rows="5" placeholder="Write your secret message..."></textarea>
+        <div class="counter"><span id="plainCount">0</span> characters</div>
+
+        <div class="key-section">
+          <div class="key-meta">
+            <div class="key-badge" id="keyLenLabel">key bits: 128+</div>
+            <div class="strength-tag" id="keyStrengthLabel">secure</div>
+          </div>
+          <div class="key-flex">
+            <input type="text" id="customKey" class="key-input" value="rr6WE398WHJbcZd5" placeholder="encryption key">
+            <button id="generateKeyBtn" class="btn-ghost">⟳ generate key</button>
+          </div>
+          <div style="font-size: 0.68rem; color:#7898b2; margin-top: 8px;">use strong key (≥16 chars). random generator available.</div>
+        </div>
+
+        <div class="action-row">
+          <button id="encryptBtn" class="btn btn-primary">encrypt →</button>
+          <button id="decryptBtn" class="btn btn-primary">← decrypt</button>
+          <button id="testVectorBtn" class="btn btn-outline">test vector</button>
+          <button id="clearFieldsBtn" class="btn btn-outline">clear all</button>
+          <button id="exportDataBtn" class="btn btn-outline">export</button>
+          <button id="importDataBtn" class="btn btn-outline">import</button>
+        </div>
+
+        <div class="result-panel">
+          <div class="result-label">▲ encryption result (cipher + auth tag)</div>
+          <div id="encryptResult" class="result-text">— awaiting encryption —</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- right panel: decryption and history -->
+    <div class="card">
+      <div class="card-head">
+        <div class="icon-box">◩</div>
+        <span>ciphertext · input</span>
+      </div>
+      <div class="card-body">
+        <textarea id="cipherInput" class="input-area" rows="5" placeholder="paste base64 ciphertext here..."></textarea>
+        <div class="counter">base64 encoded payload (salt+iv+encrypted)</div>
+
+        <div class="result-panel" style="margin-top: 1rem;">
+          <div class="result-label">▼ decryption result (plaintext)</div>
+          <div id="decryptResult" class="result-text">— ready —</div>
+        </div>
+
+        <div class="history-area">
+          <div class="history-header">
+            <div class="result-label" style="margin-bottom: 0;">operation log</div>
+            <button id="clearHistoryBtn" class="text-link">clear log</button>
+          </div>
+          <div id="historyLog" class="history-log">
+            <div class="log-entry">● cryptum engine online · AES-GCM ready</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // DOM elements
+    const plainInput = document.getElementById('plainInput');
+    const cipherInput = document.getElementById('cipherInput');
+    const encryptResultDiv = document.getElementById('encryptResult');
+    const decryptResultDiv = document.getElementById('decryptResult');
+    const customKeyInput = document.getElementById('customKey');
+    const keyLenLabel = document.getElementById('keyLenLabel');
+    const keyStrengthLabel = document.getElementById('keyStrengthLabel');
+    const plainCountSpan = document.getElementById('plainCount');
+
+    // Buttons
+    const encryptBtn = document.getElementById('encryptBtn');
+    const decryptBtn = document.getElementById('decryptBtn');
+    const testVectorBtn = document.getElementById('testVectorBtn');
+    const clearFieldsBtn = document.getElementById('clearFieldsBtn');
+    const exportDataBtn = document.getElementById('exportDataBtn');
+    const importDataBtn = document.getElementById('importDataBtn');
+    const generateKeyBtn = document.getElementById('generateKeyBtn');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+    // history storage
+    let historyEntries = [];
+
+    function addLog(operation, details, success = true) {
+      const now = new Date();
+      const timeTag = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const symbol = success ? "✓" : "⚠";
+      const entry = `${timeTag} ${symbol} ${operation}: ${details}`;
+      historyEntries.unshift(entry);
+      if (historyEntries.length > 28) historyEntries.pop();
+      renderLog();
+    }
+
+    function renderLog() {
+      const logContainer = document.getElementById('historyLog');
+      if (!logContainer) return;
+      if (historyEntries.length === 0) {
+        logContainer.innerHTML = '<div class="log-entry">— no events —</div>';
+        return;
+      }
+      logContainer.innerHTML = historyEntries.map(e => `<div class="log-entry">${escapeHtml(e)}</div>`).join('');
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      });
+    }
+
+    // plaintext counter
+    function updatePlainCounter() {
+      const len = plainInput.value.length;
+      plainCountSpan.innerText = len;
+      if (len > 5000) plainCountSpan.style.color = "#c2654a";
+      else plainCountSpan.style.color = "#8ba3bc";
+    }
+    plainInput.addEventListener('input', updatePlainCounter);
+    updatePlainCounter();
+
+    // key strength + length visual
+    function refreshKeyMetrics() {
+      const key = customKeyInput.value;
+      const len = key.length;
+      keyLenLabel.innerText = `length: ${len}`;
+      if (len >= 24) keyStrengthLabel.innerText = 'high entropy';
+      else if (len >= 16) keyStrengthLabel.innerText = 'strong';
+      else if (len >= 8) keyStrengthLabel.innerText = 'moderate';
+      else keyStrengthLabel.innerText = 'weak';
+      if (len < 6) keyStrengthLabel.style.background = "#ffe3db";
+      else keyStrengthLabel.style.background = "#eef4fa";
+    }
+    customKeyInput.addEventListener('input', refreshKeyMetrics);
+    refreshKeyMetrics();
+
+    function getCurrentKey() {
+      let raw = customKeyInput.value.trim();
+      if (raw === "") raw = "DefaultInitKey_2025!crypt";
+      if (raw.length < 6) raw = raw + "SecurePad2025";
+      return raw;
+    }
+
+    // ------------------- CRYPTOGRAPHY CORE (AES-GCM) ------------------
+    async function deriveKeyFromPassword(password, salt) {
+      const encoder = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey(
+        "raw",
+        encoder.encode(password),
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+      );
+      return crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2",
+          salt: salt,
+          iterations: 210000,
+          hash: "SHA-256"
+        },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    }
+
+    async function encryptMessage(plain, passphrase) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(plain);
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const aesKey = await deriveKeyFromPassword(passphrase, salt);
+      const encrypted = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: iv, tagLength: 128 },
+        aesKey,
+        data
+      );
+      const encryptedBytes = new Uint8Array(encrypted);
+      const resultBlob = new Uint8Array(salt.length + iv.length + encryptedBytes.length);
+      resultBlob.set(salt, 0);
+      resultBlob.set(iv, salt.length);
+      resultBlob.set(encryptedBytes, salt.length + iv.length);
+      return btoa(String.fromCharCode.apply(null, resultBlob));
+    }
+
+    async function decryptMessage(combinedB64, passphrase) {
+      const binary = atob(combinedB64);
+      const buffer = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) buffer[i] = binary.charCodeAt(i);
+      if (buffer.length < 28) throw new Error("corrupted ciphertext (too short)");
+      const salt = buffer.slice(0, 16);
+      const iv = buffer.slice(16, 28);
+      const cipherWithTag = buffer.slice(28);
+      const aesKey = await deriveKeyFromPassword(passphrase, salt);
+      const decrypted = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: iv, tagLength: 128 },
+        aesKey,
+        cipherWithTag
+      );
+      return new TextDecoder().decode(decrypted);
+    }
+
+    // ---- KEY GENERATOR: generate cryptographically strong key (32 random alphanumeric) ----
+    function generateSecureKey() {
+      const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:,.<>?";
+      const array = new Uint8Array(32);
+      crypto.getRandomValues(array);
+      let result = "";
+      for (let i = 0; i < array.length; i++) {
+        result += charset[array[i] % charset.length];
+      }
+      customKeyInput.value = result;
+      refreshKeyMetrics();
+      addLog("KEYGEN", "generated new 32‑character cryptographic key", true);
+    }
+
+    // ---- encryption handler ----
+    async function handleEncrypt() {
+      try {
+        const plain = plainInput.value;
+        if (!plain.trim()) {
+          encryptResultDiv.innerText = "[aborted] empty plaintext";
+          addLog("ENCRYPT", "empty message", false);
+          return;
+        }
+        const key = getCurrentKey();
+        if (key.length < 6) throw new Error("key too short (min 6 characters)");
+        const cipher = await encryptMessage(plain, key);
+        encryptResultDiv.innerText = cipher;
+        cipherInput.value = cipher;
+        addLog("ENCRYPT", `secured ${plain.length} chars → ciphertext ready`, true);
+      } catch (err) {
+        encryptResultDiv.innerText = `encryption error: ${err.message}`;
+        addLog("ENCRYPT", `failed: ${err.message}`, false);
+      }
+    }
+
+    async function handleDecrypt() {
+      try {
+        const cipherVal = cipherInput.value.trim();
+        if (!cipherVal) {
+          decryptResultDiv.innerText = "[error] no ciphertext provided";
+          addLog("DECRYPT", "empty ciphertext", false);
+          return;
+        }
+        const key = getCurrentKey();
+        const plainResult = await decryptMessage(cipherVal, key);
+        decryptResultDiv.innerText = plainResult;
+        addLog("DECRYPT", `success: "${plainResult.substring(0, 48)}${plainResult.length > 48 ? '…' : ''}"`, true);
+      } catch (err) {
+        decryptResultDiv.innerText = `decryption failed: ${err.message}`;
+        addLog("DECRYPT", `error: ${err.message}`, false);
+      }
+    }
+
+    function loadTestVector() {
+      const testMsg = "Strictly confidential — access token: 9F3x!mVq#2kLpR. Encrypt with current key to test.";
+      plainInput.value = testMsg;
+      updatePlainCounter();
+      encryptResultDiv.innerText = "→ click 'encrypt' to generate new ciphertext";
+      decryptResultDiv.innerText = "— awaiting decryption —";
+      cipherInput.value = "";
+      addLog("TEST", "loaded test plaintext vector", true);
+    }
+
+    function clearAll() {
+      plainInput.value = "";
+      cipherInput.value = "";
+      encryptResultDiv.innerText = "— cleared —";
+      decryptResultDiv.innerText = "— cleared —";
+      updatePlainCounter();
+      addLog("CLEAR", "all fields reset", true);
+    }
+
+    function exportSession() {
+      const snapshot = {
+        plaintext: plainInput.value,
+        ciphertext: cipherInput.value,
+        lastEncryptionResult: encryptResultDiv.innerText,
+        exportTimestamp: new Date().toISOString(),
+        keyHint: "(key not exported for security)"
+      };
+      const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: "application/json" });
+      const a = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      a.href = url;
+      a.download = `cryptum_backup_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      addLog("EXPORT", "session exported as json", true);
+    }
+
+    function importSession() {
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'application/json';
+      fileInput.onchange = async (ev) => {
+        const file = ev.target.files[0];
+        if (!file) return;
+        const raw = await file.text();
+        try {
+          const data = JSON.parse(raw);
+          if (typeof data.plaintext === 'string') plainInput.value = data.plaintext;
+          if (typeof data.ciphertext === 'string') cipherInput.value = data.ciphertext;
+          if (typeof data.lastEncryptionResult === 'string') encryptResultDiv.innerText = data.lastEncryptionResult;
+          updatePlainCounter();
+          addLog("IMPORT", "restored from backup file", true);
+        } catch (err) {
+          addLog("IMPORT", "invalid json file", false);
+          alert("import error: invalid file format");
+        }
+      };
+      fileInput.click();
+    }
+
+    function clearHistory() {
+      historyEntries = [];
+      renderLog();
+      addLog("SYSTEM", "history log cleared", true);
+    }
+
+    // attach all event listeners
+    encryptBtn.addEventListener('click', handleEncrypt);
+    decryptBtn.addEventListener('click', handleDecrypt);
+    testVectorBtn.addEventListener('click', loadTestVector);
+    clearFieldsBtn.addEventListener('click', clearAll);
+    exportDataBtn.addEventListener('click', exportSession);
+    importDataBtn.addEventListener('click', importSession);
+    generateKeyBtn.addEventListener('click', generateSecureKey);
+    clearHistoryBtn.addEventListener('click', clearHistory);
+
+    // initial log
+    addLog("READY", "cryptum engine · AES-256-GCM | key generator active", true);
+    refreshKeyMetrics();
+  })();
+</script>
+</body>
+</html>
